@@ -45,4 +45,4 @@ lxc exec cnt-openvpn-base -- \
         && apt install -y openssh-client \
         && apt install -y iputils-ping \
         && ln -s /etc/easyrsa/ /etc/openvpn/
-        && chmod u+x gen_req.sh"
+        && chmod u+x /root/gen_req.sh"
