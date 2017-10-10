@@ -7,8 +7,10 @@ lxc exec cnt-ubuntu-base -- \
         && apt autoremove -y"
 
 lxc restart cnt-ubuntu-base
+
 lxc stop cnt-ubuntu-base
 lxc copy cnt-ubuntu-base cnt-easyrsa-base
+
 lxc start cnt-easyrsa-base
 sleep 10
 
@@ -20,10 +22,34 @@ lxc exec cnt-easyrsa-base -- \
         && ./easyrsa init-pki"
 
 lxc restart cnt-easyrsa-base
+
 lxc stop cnt-easyrsa-base
 lxc copy cnt-easyrsa-base cnt-easyrsa
+lxc copy cnt-easyrsa-base cnt-openvpn-base
+
 lxc start cnt-easyrsa
+lxc start cnt-openvpn-base
 sleep 10
+
+lxc exec cnt-openvpn-base -- \
+    bash -c "wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg | apt-key add - \
+        && echo 'deb http://build.openvpn.net/debian/openvpn/release/2.4 xenial main' > /etc/apt/sources.list.d/openvpn.list \
+        && apt update \
+        && apt install -y openvpn \
+        && ln -s /etc/easyrsa/ /etc/openvpn/"
+
+lxc restart cnt-openvpn-base
+
+lxc stop cnt-openvpn-base
+lxc copy cnt-openvpn-base cnt-server
+lxc copy cnt-openvpn-base cnt-client
+
+lxc start cnt-server
+lxc start cnt-client
+sleep 10
+
+lxc file push ./server/server.conf cnt-server/etc/openvpn/
+lxc file push ./client/client.conf cnt-client/etc/openvpn/
 
 lxc exec cnt-easyrsa -- \
     bash -c "cd /etc/easyrsa/ \
@@ -31,43 +57,16 @@ lxc exec cnt-easyrsa -- \
         && ./easyrsa gen-dh"
 
 lxc restart cnt-easyrsa
-lxc copy cnt-easyrsa-base cnt-openvpn-base
-lxc start cnt-openvpn-base
-sleep 10
-
-lxc file push ./openvpn_base/gen_req.sh cnt-openvpn-base/root/
-
-lxc exec cnt-openvpn-base -- \
-    bash -c "wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg | apt-key add - \
-        && echo 'deb http://build.openvpn.net/debian/openvpn/release/2.4 xenial main' > /etc/apt/sources.list.d/openvpn.list \
-        && apt update \
-        && apt install -y openvpn \
-        && ln -s /etc/easyrsa/ /etc/openvpn/ \
-        && chmod u+x /root/gen_req.sh"
-
-lxc restart cnt-openvpn-base
-lxc stop cnt-openvpn-base
-lxc copy cnt-openvpn-base cnt-server
-lxc start cnt-server
-sleep 10
 
 SERVER_NAME=openvpn_svr
 CLIENT_NAME=openvpn_clt1
 
-lxc exec cnt-server -- \
+lxc exec cnt-server --env SERVER_NAME=$SERVER_NAME -- \
     bash -c "cd /etc/easyrsa/ \
         && echo '' | ./easyrsa gen-req $SERVER_NAME nopass"
 
-lxc file pull cnt-server/etc/easyrsa/pki/reqs/$SERVER_NAME.req ./temp/
-
-lxc file push ./server/server.conf cnt-server/etc/openvpn/
-
-lxc copy cnt-openvpn-base cnt-client
-lxc start cnt-client
-sleep 10
-
-lxc exec cnt-client -- \
+lxc exec cnt-client --env CLIENT_NAME=$CLIENT_NAME -- \
     bash -c "cd /etc/easyrsa/ \
         && echo '' | ./easyrsa gen-req $CLIENT_NAME nopass"
 
-lxc file push ./client/client.conf cnt-client/etc/openvpn/
+lxc file pull cnt-server/etc/easyrsa/pki/reqs/$SERVER_NAME.req ./temp/
