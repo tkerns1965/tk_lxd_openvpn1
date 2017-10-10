@@ -44,3 +44,17 @@ lxc exec cnt-openvpn-base -- \
         && apt install -y openvpn \
         && ln -s /etc/easyrsa/ /etc/openvpn/ \
         && chmod u+x /root/gen_req.sh"
+
+lxc restart cnt-openvpn-base
+lxc stop cnt-openvpn-base
+lxc copy cnt-openvpn-base cnt-server
+lxc start cnt-server
+sleep 10
+
+lxc file push ./server/server.conf cnt-server/etc/openvpn/
+
+lxc copy cnt-openvpn-base cnt-client
+lxc start cnt-client
+sleep 10
+
+lxc file push ./client/client.conf cnt-client/etc/openvpn/
