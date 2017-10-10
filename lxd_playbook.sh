@@ -58,6 +58,8 @@ lxc exec cnt-server -- \
     bash -c "cd /etc/easyrsa/ \
         && echo '' | ./easyrsa gen-req $SERVER_NAME nopass"
 
+lxc file pull cnt-server/etc/easyrsa/pki/reqs/$SERVER_NAME.req ./temp/
+
 lxc file push ./server/server.conf cnt-server/etc/openvpn/
 
 lxc copy cnt-openvpn-base cnt-client
