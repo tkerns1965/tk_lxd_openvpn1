@@ -1,4 +1,5 @@
 lxc launch ubuntu:16.04 cnt-ubuntu-base
+sleep 30
 
 lxc exec cnt-ubuntu-base -- apt update
 lxc exec cnt-ubuntu-base -- apt upgrade -y
