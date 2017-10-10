@@ -51,10 +51,21 @@ lxc copy cnt-openvpn-base cnt-server
 lxc start cnt-server
 sleep 10
 
+SERVER_NAME=openvpn_svr
+CLIENT_NAME=openvpn_clt1
+
+lxc exec cnt-server -- \
+    bash -c "cd /etc/easyrsa/ \
+        && echo '' | ./easyrsa gen-req $SERVER_NAME nopass"
+
 lxc file push ./server/server.conf cnt-server/etc/openvpn/
 
 lxc copy cnt-openvpn-base cnt-client
 lxc start cnt-client
 sleep 10
+
+lxc exec cnt-client -- \
+    bash -c "cd /etc/easyrsa/ \
+        && echo '' | ./easyrsa gen-req $CLIENT_NAME nopass"
 
 lxc file push ./client/client.conf cnt-client/etc/openvpn/
