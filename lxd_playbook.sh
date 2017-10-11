@@ -9,10 +9,8 @@ lxc exec ubuntu-base -- \
         && echo '<ubuntu-base'"
 
 lxc restart ubuntu-base
-
 lxc stop ubuntu-base
 lxc copy ubuntu-base easyrsa-base
-
 lxc start easyrsa-base
 sleep 10
 
@@ -26,12 +24,8 @@ lxc exec easyrsa-base -- \
         && echo '<easyrsa-base'"
 
 lxc restart easyrsa-base
-
 lxc stop easyrsa-base
-lxc copy easyrsa-base easyrsa
 lxc copy easyrsa-base openvpn-base
-
-lxc start easyrsa
 lxc start openvpn-base
 sleep 10
 
@@ -45,12 +39,12 @@ lxc exec ovpn-base -- \
         && echo '<ovpn-base'"
 
 lxc restart ovpn-base
-
 lxc stop ovpn-base
 lxc copy ovpn-base ovpn-svr
-lxc copy ovpn-base ovpn-clt
-
 lxc start ovpn-svr
+sleep 10
+
+lxc copy ovpn-base ovpn-clt
 lxc start ovpn-clt
 sleep 10
 
@@ -70,6 +64,10 @@ lxc exec ovpn-clt -- \
         && sed -i 's/LimitNPROC=10/#LimitNPROC=10/' /lib/systemd/system/openvpn@.service \
         && systemctl daemon-reload \
         && echo '<ovpn-clt'"
+
+lxc copy easyrsa-base easyrsa
+lxc start easyrsa
+sleep 10
 
 lxc exec easyrsa -- \
     bash -c "echo 'easyrsa>' \
