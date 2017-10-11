@@ -82,3 +82,39 @@ lxc exec cnt-client --env CLIENT_NAME=$CLIENT_NAME -- \
         && echo '<cnt-client'"
 
 lxc file pull cnt-server/etc/easyrsa/pki/reqs/$SERVER_NAME.req ./temp/
+lxc file pull cnt-client/etc/easyrsa/pki/reqs/$CLIENT_NAME.req ./temp/
+
+lxc file push ./temp/$SERVER_NAME.req cnt-easyrsa/root/
+lxc file push ./temp/$CLIENT_NAME.req cnt-easyrsa/root/
+
+lxc exec cnt-easyrsa --env SERVER_NAME=$SERVER_NAME -- \
+    bash -c "echo 'cnt-easyrsa>' \
+        && cd /etc/easyrsa/ \
+        && ./easyrsa import-req /root/$SERVER_NAME.req $SERVER_NAME \
+        && rm /root/$SERVER_NAME.req \
+        && echo 'yes' | bash ./easyrsa sign-req server $SERVER_NAME \
+        && echo '<cnt-easyrsa'"
+
+lxc exec cnt-easyrsa --env CLIENT_NAME=$CLIENT_NAME -- \
+    bash -c "echo 'cnt-easyrsa>' \
+        && cd /etc/easyrsa/ \
+        && ./easyrsa import-req /root/$CLIENT_NAME.req $CLIENT_NAME \
+        && rm /root/$CLIENT_NAME.req \
+        && echo 'yes' | bash ./easyrsa sign-req client $CLIENT_NAME \
+        && echo '<cnt-easyrsa'"
+
+rm ./temp/*
+
+lxc file pull cnt-easyrsa/etc/easyrsa/pki/ca.crt ./temp/
+lxc file pull cnt-easyrsa/etc/easyrsa/pki/dh.pem ./temp/
+lxc file pull cnt-easyrsa/etc/easyrsa/pki/issued/$SERVER_NAME.req ./temp/
+lxc file pull cnt-easyrsa/etc/easyrsa/pki/issued/$CLIENT_NAME.req ./temp/
+
+lxc file push ./temp/ca.crt cnt-server/etc/easyrsa/pki/
+lxc file push ./temp/ca.crt cnt-client/etc/easyrsa/pki/
+lxc file push ./temp/dh.pem cnt-server/etc/easyrsa/pki/
+lxc file push ./temp/dh.pem cnt-client/etc/easyrsa/pki/
+lxc file push ./temp/$SERVER_NAME.crt cnt-server/etc/easyrsa/pki/
+lxc file push ./temp/$CLIENT_NAME.crt cnt-client/etc/easyrsa/pki/
+
+rm ./temp/*
