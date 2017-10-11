@@ -107,8 +107,8 @@ rm ./temp/*
 
 lxc file pull cnt-easyrsa/etc/easyrsa/pki/ca.crt ./temp/
 lxc file pull cnt-easyrsa/etc/easyrsa/pki/dh.pem ./temp/
-lxc file pull cnt-easyrsa/etc/easyrsa/pki/issued/$SERVER_NAME.req ./temp/
-lxc file pull cnt-easyrsa/etc/easyrsa/pki/issued/$CLIENT_NAME.req ./temp/
+lxc file pull cnt-easyrsa/etc/easyrsa/pki/issued/$SERVER_NAME.crt ./temp/
+lxc file pull cnt-easyrsa/etc/easyrsa/pki/issued/$CLIENT_NAME.crt ./temp/
 
 lxc file push ./temp/ca.crt cnt-server/etc/easyrsa/pki/
 lxc file push ./temp/ca.crt cnt-client/etc/easyrsa/pki/
