@@ -60,8 +60,8 @@ lxc start ovpn-svr
 lxc start ovpn-clt
 sleep 10
 
-SERVER_NAME=ovpn_svr
-CLIENT_NAME=ovpn_clt1
+SERVER_NAME=ovpn-svr
+CLIENT_NAME=ovpn-clt1
 
 lxc exec ovpn-svr --env SERVER_NAME=$SERVER_NAME -- \
     bash -c "echo 'ovpn-svr>' \
