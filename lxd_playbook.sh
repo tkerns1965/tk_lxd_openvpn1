@@ -26,7 +26,7 @@ lxc exec easyrsa-base -- \
 lxc restart easyrsa-base
 lxc stop easyrsa-base
 lxc copy easyrsa-base openvpn-base
-lxc start openvpn-base
+lxc start ovpn-base
 sleep 10
 
 lxc exec ovpn-base -- \
