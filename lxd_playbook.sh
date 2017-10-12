@@ -111,8 +111,8 @@ lxc file push ./temp/$CLIENT_NAME.crt ovpn-clt/etc/easyrsa/pki/
 
 rm ./temp/*
 
-lxc file push ./server/server.conf ovpn-svr/etc/openvpn/
-lxc file push ./client/client.conf ovpn-clt/etc/openvpn/
+lxc file push ./ovpn-svr/server.conf ovpn-svr/etc/openvpn/
+lxc file push ./ovpn-clt/client.conf ovpn-clt/etc/openvpn/
 
 lxc exec ovpn-svr -- \
     bash -c "echo 'ovpn-svr>' \
