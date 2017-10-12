@@ -52,8 +52,6 @@ lxc exec easyrsa -- \
         && ./easyrsa gen-dh \
         && echo '<easyrsa'"
 
-lxc restart easyrsa
-
 lxc copy ovpn-base ovpn-svr
 lxc copy ovpn-base ovpn-clt
 lxc start ovpn-svr
