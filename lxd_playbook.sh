@@ -40,30 +40,6 @@ lxc exec ovpn-base -- \
 
 lxc restart ovpn-base
 lxc stop ovpn-base
-lxc copy ovpn-base ovpn-svr
-lxc start ovpn-svr
-sleep 10
-
-lxc copy ovpn-base ovpn-clt
-lxc start ovpn-clt
-sleep 10
-
-lxc file push ./server/server.conf ovpn-svr/etc/openvpn/
-lxc file push ./client/client.conf ovpn-clt/etc/openvpn/
-
-lxc exec ovpn-svr -- \
-    bash -c "echo 'ovpn-svr>' \
-        && sed -i 's/#AUTOSTART=\"all\"/AUTOSTART=\"all\"/' /etc/default/openvpn \
-        && sed -i 's/LimitNPROC=10/#LimitNPROC=10/' /lib/systemd/system/openvpn@.service \
-        && systemctl daemon-reload \
-        && echo '<ovpn-svr'"
-
-lxc exec ovpn-clt -- \
-    bash -c "echo 'ovpn-clt>' \
-        && sed -i 's/#AUTOSTART=\"all\"/AUTOSTART=\"all\"/' /etc/default/openvpn \
-        && sed -i 's/LimitNPROC=10/#LimitNPROC=10/' /lib/systemd/system/openvpn@.service \
-        && systemctl daemon-reload \
-        && echo '<ovpn-clt'"
 
 lxc copy easyrsa-base easyrsa
 lxc start easyrsa
@@ -77,6 +53,12 @@ lxc exec easyrsa -- \
         && echo '<easyrsa'"
 
 lxc restart easyrsa
+
+lxc copy ovpn-base ovpn-svr
+lxc copy ovpn-base ovpn-clt
+lxc start ovpn-svr
+lxc start ovpn-clt
+sleep 10
 
 SERVER_NAME=ovpn_svr
 CLIENT_NAME=ovpn_clt1
@@ -99,6 +81,8 @@ lxc file pull ovpn-clt/etc/easyrsa/pki/reqs/$CLIENT_NAME.req ./temp/
 lxc file push ./temp/$SERVER_NAME.req easyrsa/root/
 lxc file push ./temp/$CLIENT_NAME.req easyrsa/root/
 
+rm ./temp/*
+
 lxc exec easyrsa --env SERVER_NAME=$SERVER_NAME -- \
     bash -c "echo 'easyrsa>' \
         && cd /etc/easyrsa/ \
@@ -115,8 +99,6 @@ lxc exec easyrsa --env CLIENT_NAME=$CLIENT_NAME -- \
         && echo 'yes' | bash ./easyrsa sign-req client $CLIENT_NAME \
         && echo '<easyrsa'"
 
-rm ./temp/*
-
 lxc file pull easyrsa/etc/easyrsa/pki/ca.crt ./temp/
 lxc file pull easyrsa/etc/easyrsa/pki/dh.pem ./temp/
 lxc file pull easyrsa/etc/easyrsa/pki/issued/$SERVER_NAME.crt ./temp/
@@ -130,6 +112,23 @@ lxc file push ./temp/$SERVER_NAME.crt ovpn-svr/etc/easyrsa/pki/
 lxc file push ./temp/$CLIENT_NAME.crt ovpn-clt/etc/easyrsa/pki/
 
 rm ./temp/*
+
+lxc file push ./server/server.conf ovpn-svr/etc/openvpn/
+lxc file push ./client/client.conf ovpn-clt/etc/openvpn/
+
+lxc exec ovpn-svr -- \
+    bash -c "echo 'ovpn-svr>' \
+        && sed -i 's/#AUTOSTART=\"all\"/AUTOSTART=\"all\"/' /etc/default/openvpn \
+        && sed -i 's/LimitNPROC=10/#LimitNPROC=10/' /lib/systemd/system/openvpn@.service \
+        && systemctl daemon-reload \
+        && echo '<ovpn-svr'"
+
+lxc exec ovpn-clt -- \
+    bash -c "echo 'ovpn-clt>' \
+        && sed -i 's/#AUTOSTART=\"all\"/AUTOSTART=\"all\"/' /etc/default/openvpn \
+        && sed -i 's/LimitNPROC=10/#LimitNPROC=10/' /lib/systemd/system/openvpn@.service \
+        && systemctl daemon-reload \
+        && echo '<ovpn-clt'"
 
 lxc restart ovpn-svr
 lxc restart ovpn-clt
